@@ -231,6 +231,17 @@ export async function sendMessage(to: string, text: string): Promise<FormState> 
 
 /* ---------- Perfil ---------- */
 
+export async function changePassword(_: FormState, f: FormData): Promise<FormState> {
+  const u = await requireUser();
+  const current = String(f.get("current") ?? "").slice(0, 200);
+  const next = String(f.get("next") ?? "");
+  if (next.length < 8 || next.length > 200) return { error: "La nueva contraseña debe tener al menos 8 caracteres." };
+  const row = (await sql`select password_hash from users where id = ${u.id}`)[0];
+  if (!row?.password_hash || !(await verifyPassword(current, row.password_hash))) return { error: "La contraseña actual no es correcta." };
+  await sql`update users set password_hash = ${await hashPassword(next)} where id = ${u.id}`;
+  return { ok: "Contraseña actualizada" };
+}
+
 export async function updateProfile(_: FormState, f: FormData): Promise<FormState> {
   const u = await requireUser();
   const name = str(f, "name", 80);
