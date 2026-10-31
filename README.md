@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Órbita · app
 
-## Getting Started
+Comunidad, cursos y encuentros. Next.js 16 (App Router) + Postgres en Neon, desplegada en Vercel.
 
-First, run the development server:
+- Producción: https://orbita-kappa-one.vercel.app (proyecto Vercel `actualizatemts-projects/orbita`)
+- Base de datos: Neon `orbita-db` (integración de Vercel). `DATABASE_URL` y `AUTH_SECRET` viven en Vercel; local en `.env.local` (`vercel env pull`).
+
+## Comandos
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev                                         # local
+node --env-file=.env.local scripts/migrate.mjs      # aplica db/schema.sql (+ db/seed.sql si la base está vacía)
+npm run build && vercel deploy --prod               # publicar
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ojo: local y producción usan la MISMA base. Lo que se pruebe en local queda en vivo.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Pruebas
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx next start -p 3050
+BASE=http://localhost:3050 OUT=<carpeta> PW_HEADLESS=true node ~/.claude/skills/playwright-skill/run.js playwright-tests/flujo-principal.js
+```
 
-## Learn More
+Crea usuarios `*@test.orbita`; bórralos después:
+`delete from users where email like '%@test.orbita';`
 
-To learn more about Next.js, take a look at the following resources:
+## Admins
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+El registro siempre crea miembros. Para dar admin:
+`update users set role = 'admin' where email = '<correo>';`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Qué falta (fuera del MVP)
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Pagos (Stripe), video real (Bunny Stream: poner `lessons.video_url`), recuperar contraseña y verificación de correo (Resend), panel de admin, 2FA, borrar cuenta, revocar sesiones, límite de mensajes directos, recordatorios de eventos y mejoras V1-V3 del documento `02-Proyecto-Orbita`.
